@@ -8,8 +8,6 @@ Modificados archivos:
 - project/run_tensor.py
 
 ## Resultado de Task 2.5: Training
-
-### Ejemplo linealmente separable
 <p float="left">
   <img src="https://github.com/JesusATL/Module-2/blob/master/images/m2loss.png" width="300" />
   <img src="https://github.com/JesusATL/Module-2/blob/master/images/m2e0.png" width="300" />
