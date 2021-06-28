@@ -25,6 +25,8 @@ def index_to_position(index, strides):
     """
 
     # TODO: Implement for Task 2.1.
+    return sum([  idx * strd  for idx , strd  in zip(index , strides) ])
+
     raise NotImplementedError('Need to implement for Task 2.1')
 
 
@@ -44,8 +46,16 @@ def count(position, shape, out_index):
       None : Fills in `out_index`.
 
     """
-    # TODO: Implement for Task 2.1.
-    raise NotImplementedError('Need to implement for Task 2.1')
+
+    stirdes = strides_from_shape(shape)
+    pos = position
+    
+    for i in range(len(out_index)):
+        actual_idx = pos // stirdes[i]
+        out_index[i] = actual_idx
+        pos = pos % stirdes[i]
+    
+#    raise NotImplementedError('Need to implement for Task 2.1')
 
 
 def broadcast_index(big_index, big_shape, shape, out_index):
@@ -66,7 +76,14 @@ def broadcast_index(big_index, big_shape, shape, out_index):
         None : Fills in `out_index`.
     """
     # TODO: Implement for Task 2.4.
-    raise NotImplementedError('Need to implement for Task 2.4')
+
+    for dim in range(len(shape)):
+        if shape[dim] == 1:
+            out_index[dim] = 0
+        else:
+            out_index[dim] = big_index[dim + (len(big_shape) - len(shape))]
+    return None
+    #raise NotImplementedError('Need to implement for Task 2.4')
 
 
 def shape_broadcast(shape1, shape2):
@@ -84,6 +101,28 @@ def shape_broadcast(shape1, shape2):
         IndexingError : if cannot broadcast
     """
     # TODO: Implement for Task 2.4.
+
+
+    big_shape =  shape1 if len(shape1) > len(shape2) else shape2
+    small_shape =  shape1 if len(shape1) <= len(shape2) else shape2
+
+    reverse_big  =  list(reversed(big_shape))
+    reverse_small =list(reversed(small_shape))
+
+    result_shape = [0] * len(big_shape)
+    
+    for idx in range (len(result_shape)):        
+        if idx < len(reverse_small):
+            result_shape[idx] = max(reverse_big[idx] , reverse_small[idx])
+
+            if reverse_big[idx] != 1 and reverse_small[idx] != 1:
+                if reverse_big[idx] != reverse_small[idx]:
+                    raise IndexingError("cannot broadcast")
+        else:
+            result_shape[idx] = reverse_big[idx]
+
+    return tuple(reversed(result_shape))
+
     raise NotImplementedError('Need to implement for Task 2.4')
 
 
@@ -192,6 +231,13 @@ class TensorData:
         ), f"Must give a position to each dimension. Shape: {self.shape} Order: {order}"
 
         # TODO: Implement for Task 2.1.
+        
+        permuted_shape = [ self.shape[idx] for idx in order]
+        permuted_stride = [ self._strides[idx] for idx in order]
+
+        return TensorData(self._storage , tuple(permuted_shape), tuple(permuted_stride))
+
+
         raise NotImplementedError('Need to implement for Task 2.1')
 
     def to_string(self):

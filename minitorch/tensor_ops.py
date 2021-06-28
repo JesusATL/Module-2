@@ -30,10 +30,16 @@ def tensor_map(fn):
 
     def _map(out, out_shape, out_strides, in_storage, in_shape, in_strides):
         # TODO: Implement for Task 2.2.
-        raise NotImplementedError('Need to implement for Task 2.2')
+        #raise NotImplementedError('Need to implement for Task 2.2')
 
+        idx_out = [ 0.0 for e in out_strides]
+        idx_in = [ 0.0 for e in in_strides]
+
+        for pos in range(len(in_storage)):
+            count(pos, out_shape,  idx_out)
+            broadcast_index(idx_out, out_shape, in_shape, idx_in)
+            out[index_to_position(idx_out, out_strides)] = fn(in_storage[index_to_position(idx_in, in_strides)])
     return _map
-
 
 def map(fn):
     """
@@ -100,9 +106,35 @@ def tensor_zip(fn):
         b_strides,
     ):
         # TODO: Implement for Task 2.2.
-        raise NotImplementedError('Need to implement for Task 2.2')
+
+#        idx_out = [ 0.0 for e in out_strides]
+#        idx_b  =[ 0.0 for e in b_strides]
+#
+#        for pos in range(len(a_storage)):
+#            count(pos, out_shape,  idx_out)
+#            count(pos, b_shape,  idx_b)
+#
+#            out[index_to_position(idx_out, out_strides)] = fn(a_storage[[pos]] , b_storage[index_to_position(idx_b, b_strides)])
+
+        idx_out = [ 0.0 for e in out_strides]
+        idx_a  =[ 0.0 for e in a_strides]
+        idx_b  =[ 0.0 for e in b_strides]
+
+        for pos in range(len(out)):
+            count(pos, out_shape,  idx_out)
+            broadcast_index(idx_out, out_shape, b_shape, idx_b)
+
+            broadcast_index(idx_out, out_shape, a_shape, idx_a)
+#            count(pos, b_shape,  idx_b)
+
+            out[index_to_position(idx_out, out_strides)] = fn(a_storage[index_to_position(idx_a, a_strides)] , b_storage[index_to_position(idx_b, b_strides)])
+
+
+
+        #raise NotImplementedError('Need to implement for Task 2.2')
 
     return _zip
+
 
 
 def zip(fn):
@@ -156,7 +188,7 @@ def tensor_reduce(fn):
     Returns:
         None : Fills in `out`
     """
-
+    
     def _reduce(
         out,
         out_shape,
@@ -167,11 +199,35 @@ def tensor_reduce(fn):
         reduce_shape,
         reduce_size,
     ):
+        
+
+        #Out len :  3
+        #Out shape :  [1 1 3]
+        #Out strd :  [3 3 1]
+        #A shape :  [2 1 3]
+        #A strd :  [3 3 1]
+        #Reduce shape :  [2, 1, 1]
+        #Reduce sze :  2
+
+
         # TODO: Implement for Task 2.2.
-        raise NotImplementedError('Need to implement for Task 2.2')
+        
+        idx_out = [ 0.0 for e in out_strides]
+        idx_a  =[ 0.0 for e in a_strides]
 
+        for pos_out in range(len(out)):
+            count(pos_out, out_shape, idx_out)
+            for reduce_pos in range(reduce_size):
+                count(reduce_pos, reduce_shape, idx_a)
+
+                for dim in range(len(reduce_shape)):
+                    if reduce_shape[dim] == 1:
+                        idx_a[dim] = idx_out[dim] 
+                
+                pos_a = index_to_position(idx_a, a_strides)
+                out[pos_out] = fn(out[pos_out], a_storage[pos_a])
     return _reduce
-
+    #raise NotImplementedError('Need to implement for Task 2.2')
 
 def reduce(fn, start=0.0):
     """

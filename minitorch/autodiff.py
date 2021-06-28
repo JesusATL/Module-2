@@ -48,9 +48,9 @@ class Variable:
     def derivative(self):
         return self._derivative
 
-    ## IGNORE
+    # IGNORE
     def __hash__(self):
-        return hash(self.name)
+        return hash(self._name)
 
     def _add_deriv(self, val):
         assert self.history.is_leaf(), "Only leaf variables can have derivatives."
@@ -73,7 +73,7 @@ class Variable:
     def expand(self, x):
         return x
 
-    ## IGNORE
+    # IGNORE
 
 
 class Context:
@@ -139,7 +139,7 @@ class FunctionBase:
 
     @staticmethod
     def variable(raw, history):
-        raise NotImplementedError()
+        pass
 
     @classmethod
     def apply(cls, *vals):
@@ -169,6 +169,7 @@ class FunctionBase:
         Implement the derivative chain-rule.
 
         Args:
+            cls (:class:`FunctionBase`): The Function
             ctx (:class:`Context`) : The context from running forward
             inputs (list of args) : The args that were passed to :func:`FunctionBase.apply` (e.g. :math:`x, y`)
             d_output (number) : The `d_output` value in the chain rule.
@@ -178,7 +179,21 @@ class FunctionBase:
             (see `is_constant` to remove unneeded variables)
 
         """
-        raise NotImplementedError('Need to include this file from past assignment.')
+        # TODO: Implement for Task 1.3.
+
+        # las funciones de 2 variables devueven tuplas 
+        # las funciones de 1 variable no
+        # (fx1' * d , fx2' * d , ...)
+        df_dxi_times_d = wrap_tuple(cls.backward(ctx, d_output))
+
+        VarsDvs = []
+        for variable, derivate in zip(inputs, df_dxi_times_d):
+            if not is_constant(variable):
+                VarsDvs.append(VariableWithDeriv(variable, derivate))
+                
+        return VarsDvs
+
+        raise NotImplementedError('Need to implement for Task 1.3')
 
 
 def is_leaf(val):
@@ -194,12 +209,31 @@ def backpropagate(final_variable_with_deriv):
     Runs a breadth-first search on the computation graph in order to
     backpropagate derivatives to the leaves.
 
-    See :doc:`backpropagate` for details on the algorithm.
+    See :doc:`backpropagate` for details on the algorithm
 
     Args:
-        final_variable_with_deriv (:class:`VariableWithDeriv`): The final variable
-                and its derivative that we want to propagate backward to the leaves.
-
-    No return. Should write to its results to the derivative values of each leaf.
+       final_variable_with_deriv (:class:`VariableWithDeriv`): The final variable
+           and its derivative that we want to propagate backward to the leaves.
+    
     """
-    raise NotImplementedError('Need to include this file from past assignment.')
+    # TODO: Implement for Task 1.4.
+
+    cola = [final_variable_with_deriv]
+
+    while cola:
+        var_dev = cola.pop(0)
+
+        actual_variable = var_dev.variable
+        actual_derivate = var_dev.deriv
+
+        if actual_variable.history.is_leaf():
+            actual_variable._add_deriv(actual_derivate)
+            continue
+
+        list_new_var_dev = actual_variable.history.backprop_step(
+            actual_derivate)
+
+        cola.extend(list_new_var_dev)
+    return
+
+#    raise NotImplementedError('Need to implement for Task 1.4')
